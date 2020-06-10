@@ -197,7 +197,7 @@ public class ScoreEndpoint {
 	@ApiMethod(name = "postMsg", httpMethod = HttpMethod.POST)
 	public Entity postMsg(User user, PostMessage pm) throws UnauthorizedException {
 
-		if (user == null) {
+		if (user == null) { // valider authentification
 			throw new UnauthorizedException("Invalid credentials");
 		}
 
