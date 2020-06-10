@@ -38,12 +38,12 @@ import com.google.appengine.api.datastore.Transaction;
 
 @Api(name = "myApi",
      version = "v1",
-     audiences = "927375242383-t21v9ml38tkh2pr30m4hqiflkl3jfohl.apps.googleusercontent.com",
-  	 clientIds = "927375242383-t21v9ml38tkh2pr30m4hqiflkl3jfohl.apps.googleusercontent.com",
+     audiences = "852096843957-2vb1jhobb8t1311kqf2v269chbbmp2km.apps.googleusercontent.com",
+  	 clientIds = "852096843957-2vb1jhobb8t1311kqf2v269chbbmp2km.apps.googleusercontent.com",
      namespace =
      @ApiNamespace(
-		   ownerDomain = "helloworld.example.com",
-		   ownerName = "helloworld.example.com",
+		   ownerDomain = "tinygram-272116.appspot.com",
+		   ownerName = "tinygram-272116.appspot.com",
 		   packagePath = "")
      )
 

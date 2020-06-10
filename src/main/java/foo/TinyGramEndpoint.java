@@ -1,5 +1,6 @@
 package foo;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -21,8 +22,10 @@ import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.PropertyProjection;
@@ -47,41 +50,54 @@ import com.google.appengine.api.datastore.Transaction;
 		   packagePath = "")
      )
 class TinyGramEndpoint {
+	
+	
 
-	/*@ApiMethod(name = "mypost", httpMethod = HttpMethod.GET)
-	public CollectionResponse<Entity> mypost(@Named("name") String name, @Nullable @Named("next") String cursorString) {
+	@ApiMethod(name = "timeline",
+			   httpMethod = ApiMethod.HttpMethod.GET)
+		public CollectionResponse<Entity> getTimeline(User user, @Nullable @Named("next") String cursorString)
+				throws UnauthorizedException {
 
-	    Query q = new Query("Post").setFilter(new FilterPredicate("owner", FilterOperator.EQUAL, name));
+			if (user == null) {
+				throw new UnauthorizedException("Invalid credentials");
+			}
 
-	    // https://cloud.google.com/appengine/docs/standard/python/datastore/projectionqueries#Indexes_for_projections
-	    //q.addProjection(new PropertyProjection("body", String.class));
-	    //q.addProjection(new PropertyProjection("date", java.util.Date.class));
-	    //q.addProjection(new PropertyProjection("likec", Integer.class));
-	    //q.addProjection(new PropertyProjection("url", String.class));
+			Query q = new Query("Post").
+			    setFilter(new FilterPredicate("receivers", FilterOperator.EQUAL, user.getEmail()));
 
-	    // looks like a good idea but...
-	    // generate a DataStoreNeedIndexException -> 
-	    // require compositeIndex on owner + date
-	    // Explosion combinatoire.
-	    // q.addSort("date", SortDirection.DESCENDING);
-	    
-	    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-	    PreparedQuery pq = datastore.prepare(q);
-	    
-	    FetchOptions fetchOptions = FetchOptions.Builder.withLimit(2);
-	    
-	    if (cursorString != null) {
-		fetchOptions.startCursor(Cursor.fromWebSafeString(cursorString));
+			// Multiple projection require a composite index
+			// owner is automatically projected...
+			// q.addProjection(new PropertyProjection("body", String.class));
+			// q.addProjection(new PropertyProjection("date", java.util.Date.class));
+			// q.addProjection(new PropertyProjection("likec", Integer.class));
+			// q.addProjection(new PropertyProjection("url", String.class));
+
+			// looks like a good idea but...
+			// require a composite index
+			// - kind: Post
+			//  properties:
+			//  - name: owner
+			//  - name: date
+			//    direction: desc
+
+			// q.addSort("date", SortDirection.DESCENDING);
+
+			DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+			PreparedQuery pq = datastore.prepare(q);
+
+			FetchOptions fetchOptions = FetchOptions.Builder.withLimit(2);
+
+			if (cursorString != null) {
+				fetchOptions.startCursor(Cursor.fromWebSafeString(cursorString));
+			}
+
+			QueryResultList<Entity> results = pq.asQueryResultList(fetchOptions);
+			cursorString = results.getCursor().toWebSafeString();
+
+			return CollectionResponse.<Entity>builder().setItems(results).setNextPageToken(cursorString).build();
 		}
-	    
-	    QueryResultList<Entity> results = pq.asQueryResultList(fetchOptions);
-	    cursorString = results.getCursor().toWebSafeString();
-	    
-	    return CollectionResponse.<Entity>builder().setItems(results).setNextPageToken(cursorString).build();
-	    
-	}
     
-	@ApiMethod(name = "getPost",
+	@ApiMethod(name = "getMyPost",
 		   httpMethod = ApiMethod.HttpMethod.GET)
 	public CollectionResponse<Entity> getPost(User user, @Nullable @Named("next") String cursorString)
 			throws UnauthorizedException {
@@ -127,28 +143,66 @@ class TinyGramEndpoint {
 	
 	@ApiMethod(name = "postMsg", httpMethod = HttpMethod.POST)
 	public Entity postMsg(User user, PostMessage pm) throws UnauthorizedException {
+		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 
 		if (user == null) { // valider authentification
 			throw new UnauthorizedException("Invalid credentials");
 		}
 
-		Entity e = new Entity("Post", Long.MAX_VALUE-(new Date()).getTime()+":"+user.getEmail());
-		e.setProperty("owner", user.getEmail());
-		e.setProperty("url", pm.url);
-		e.setProperty("body", pm.body);
-		e.setProperty("likec", 0);
-		e.setProperty("date", new Date());
-
-///		Solution pour pas projeter les listes
-//		Entity pi = new Entity("PostIndex", e.getKey());
-//		HashSet<String> rec=new HashSet<String>();
-//		pi.setProperty("receivers",rec);
+		Entity post = new Entity("Post", Long.MAX_VALUE-(new Date()).getTime()+":"+user.getEmail());
+		post.setProperty("owner", user.getEmail());
+		post.setProperty("url", pm.url);
+		post.setProperty("body", pm.body);
+		post.setProperty("likesC", 0);
+		HashSet<String> likes=new HashSet<String>();
+		post.setProperty("likes", likes);
+		post.setProperty("date", new Date());
+				
+		List<String> receivers = new ArrayList<String>();
+		Key k = KeyFactory.createKey("User", user.getEmail());
+		try {
+			receivers = (List<String>) datastore.get(k).getProperty("followers");
+		} catch (EntityNotFoundException e) {
+			e.printStackTrace();
+		}
+		post.setProperty("receivers",receivers);
 		
-		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 		Transaction txn = datastore.beginTransaction();
-		datastore.put(e);
-//		datastore.put(pi);
+		datastore.put(post);
 		txn.commit();
-		return e;
-	}*/
+		return post;
+	}
+	
+	@ApiMethod(name = "likePost", httpMethod = HttpMethod.POST)
+	public Entity likePost(User user, PostMessage pm) throws UnauthorizedException {
+		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+
+		if (user == null) { // valider authentification
+			throw new UnauthorizedException("Invalid credentials");
+		}
+
+		Entity post = null;
+		Key k = KeyFactory.createKey("Post", pm.getId());
+
+		HashSet<String> likes = new HashSet<String>();
+		int likesC;
+		try {
+			post = datastore.get(k);
+			
+		} catch (EntityNotFoundException e) {
+			e.printStackTrace();
+		}
+		likes = (HashSet<String>) post.getProperty("likes");
+		likes.add(user.getEmail());
+		likesC = (int) post.getProperty("likesC") +1;
+		
+		post.setProperty("likesC", likesC);
+		post.setProperty("likes", likes);
+		
+		Transaction txn = datastore.beginTransaction();
+		datastore.put(post);
+		txn.commit();
+		return post;
+	}
+	
 }

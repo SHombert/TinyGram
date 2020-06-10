@@ -4,7 +4,8 @@
 <head>
         <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8" />
         <meta name="google-signin-scope" content="profile email">
-       <meta name="google-signin-client_id" content="852096843957-2vb1jhobb8t1311kqf2v269chbbmp2km.apps.googleusercontent.com">
+        <meta name="google-signin-client_id"
+                content="852096843957-2vb1jhobb8t1311kqf2v269chbbmp2km.apps.googleusercontent.com">
 
         <script src="https://apis.google.com/js/platform.js" async defer></script>
 
@@ -14,8 +15,6 @@
 
         <script src="https://unpkg.com/mithril/mithril.js"></script>
         <title>TinyGram</title>
-
-
 </head>
 
 <body>
@@ -46,26 +45,104 @@
         </nav>
 
         <div class="g-signin2" data-onsuccess="onSignIn" data-theme="dark"></div>
+
+        <div id="page" class="container"></div>
 </body>
-
-
 <script>
 
+        var PostView = {
+                view: function (vnode) {
+                        return m('div', [
+                                m('div', { class: 'subtitle' }, "My Posts"),
+                                m('table', { class: 'table is-striped', "table": "is-striped" }, [
+                                        m('tr', [
+                                                m('th', { width: "50px" }, "like"),
+                                                m('th', { width: "50px" }, "del"),
+                                                m('th', { width: "50px" }, "Bodys"),
+                                                m('th', { width: "50px" }, "Urls"),
+                                                m('th', { width: "50px" }, "Like"),
+                                        ]),
 
-function onSignIn(googleUser) {
-        // Useful data for your client-side scripts:
-        var profile = googleUser.getBasicProfile();
-        console.log("ID: " + profile.getId()); // Don't send this directly to your server!
-        console.log('Full Name: ' + profile.getName());
-        console.log('Given Name: ' + profile.getGivenName());
-        console.log('Family Name: ' + profile.getFamilyName());
-        console.log("Image URL: " + profile.getImageUrl());
-        console.log("Email: " + profile.getEmail());
+                                ])
+                        ])
+                }
+        }
 
-        // The ID token you need to pass to your backend:
-        var id_token = googleUser.getAuthResponse().id_token;
-        console.log("ID Token: " + id_token);
-      }
+        var PostForm = {
+
+                view: function () {
+                        var data = {
+                                'body': '',
+                                'url': ''
+                        }
+                        return m("form", {
+                                onsubmit: savePost(data)
+                                
+                        }[
+                                m("label.label", "Body"),
+                                m("input.input[type=text][placeholder=Body]", {
+                                        oninput: function (e) { data.body = e.target.value },
+                                        value: data.body
+                                }),
+                                m("label.label", "Image"),
+                                m("input.input[type=url][placeholder=Image]", {
+                                        oninput: function (e) { data.url = e.target.value },
+                                        value: data.url
+                                }),
+                                m("button.button[type=button]", "Save")
+                        ])
+
+                },
+                savePost: function (post) {
+                        console.log("post:" + post)
+                        return m.request({
+                                method: "POST",
+                                url: "_ah/api/myApi/v1/postMsg" + '?access_token=' + encodeURIComponent(Profile.ID),
+                                params: data,
+                        })
+                                .then(function (result) {
+                                        console.log("post_message:", result)
+                                        
+                                })
+                }
+
+        }
+        
+
+
+        var Login = {
+                view: function () {
+                        return m('div', { class: 'container' }, [
+                                m("h1", { class: 'title' }, 'Connection'),
+                                m("div", {
+                                        "class": "g-signin2",
+                                        "data-theme": "dark",
+                                        "data-onsuccess": "onSignIn"
+                                }),
+                        ])
+                }
+        }
+        function onSignIn(googleUser) {
+                // Useful data for your client-side scripts:
+                var profile = googleUser.getBasicProfile();
+                console.log("ID: " + profile.getId()); // Don't send this directly to your server!
+                console.log('Full Name: ' + profile.getName());
+                console.log('Given Name: ' + profile.getGivenName());
+                console.log('Family Name: ' + profile.getFamilyName());
+                console.log("Image URL: " + profile.getImageUrl());
+                console.log("Email: " + profile.getEmail());
+
+                // The ID token you need to pass to your backend:
+                var id_token = googleUser.getAuthResponse().id_token;
+                console.log("ID Token: " + id_token);
+        }
+
+
+        m.route(document.getElementById("page"), "/secret", {
+                "/secret": PostForm,
+                "/login": Login
+        })
 
 </script>
+
 </html>
