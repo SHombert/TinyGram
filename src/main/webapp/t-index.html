@@ -43,106 +43,179 @@
                         </form>
                 </div>
         </nav>
+        <div id="page"></div>
+        <script>
 
-        <div class="g-signin2" data-onsuccess="onSignIn" data-theme="dark"></div>
-
-        <div id="page" class="container"></div>
-</body>
-<script>
-
-        var PostView = {
-                view: function (vnode) {
-                        return m('div', [
-                                m('div', { class: 'subtitle' }, "My Posts"),
-                                m('table', { class: 'table is-striped', "table": "is-striped" }, [
-                                        m('tr', [
-                                                m('th', { width: "50px" }, "like"),
-                                                m('th', { width: "50px" }, "del"),
-                                                m('th', { width: "50px" }, "Bodys"),
-                                                m('th', { width: "50px" }, "Urls"),
-                                                m('th', { width: "50px" }, "Like"),
-                                        ]),
-
+                var Profile = {
+                        name: "",
+                        email: "",
+                        ID: "",
+                        url: "",
+                        nextToken: "",
+                        list: [],
+                        view: function () {
+                                return m('div', { class: 'container' }, [
+                                        m("h1", { class: 'title' }, "name:" + Profile.name),
+                                        m("h2", { class: 'subtitle' }, "email:" + Profile.email),
+                                        m("img", { "src": Profile.url }),
+                                        m("button", { class: "button", onclick: function (e) { Profile.loadList() } }, "Msgs"),
+                                        m("button", { class: "button", onclick: function (e) { Profile.postMessage() } }, "Post Dummy"),
+                                        m("div", m(PostForm)),
+                                        m("div", m(PostView, { profile: Profile }))
                                 ])
-                        ])
-                }
-        }
-
-        var PostForm = {
-
-                view: function () {
-                        var data = {
-                                'body': '',
-                                'url': ''
-                        }
-                        return m("form", {
-                                onsubmit: savePost(data)
-                                
-                        }[
-                                m("label.label", "Body"),
-                                m("input.input[type=text][placeholder=Body]", {
-                                        oninput: function (e) { data.body = e.target.value },
-                                        value: data.body
-                                }),
-                                m("label.label", "Image"),
-                                m("input.input[type=url][placeholder=Image]", {
-                                        oninput: function (e) { data.url = e.target.value },
-                                        value: data.url
-                                }),
-                                m("button.button[type=button]", "Save")
-                        ])
-
-                },
-                savePost: function (post) {
-                        console.log("post:" + post)
-                        return m.request({
-                                method: "POST",
-                                url: "_ah/api/myApi/v1/postMsg" + '?access_token=' + encodeURIComponent(Profile.ID),
-                                params: data,
-                        })
-                                .then(function (result) {
-                                        console.log("post_message:", result)
-                                        
+                        },
+                        loadList: function () {
+                                return m.request({
+                                        method: "GET",
+                                        url: "_ah/api/myApi/v1/collectionresponse_entity" + '?access_token=' + encodeURIComponent(Profile.ID)
                                 })
+                                        .then(function (result) {
+                                                console.log("load_list:", result)
+                                                Profile.list = result.items
+                                                if ('nextPageToken' in result) {
+                                                        Profile.nextToken = result.nextPageToken
+                                                } else {
+                                                        Profile.nextToken = ""
+                                                }
+                                        })
+                        },
+                        next: function () {
+                                return m.request({
+                                        method: "GET",
+                                        url: "_ah/api/myApi/v1/collectionresponse_entity",
+                                        params: {
+                                                'next': Profile.nextToken,
+                                                'access_token': encodeURIComponent(Profile.ID)
+                                        }
+                                })
+                                        .then(function (result) {
+                                                console.log("next:", result)
+                                                result.items.map(function (item) { Profile.list.push(item) })
+                                                if ('nextPageToken' in result) {
+                                                        Profile.nextToken = result.nextPageToken
+                                                } else {
+                                                        Profile.nextToken = ""
+                                                }
+                                        })
+                        }
                 }
 
-        }
-        
 
+                var PostForm = {
 
-        var Login = {
-                view: function () {
-                        return m('div', { class: 'container' }, [
-                                m("h1", { class: 'title' }, 'Connection'),
-                                m("div", {
-                                        "class": "g-signin2",
-                                        "data-theme": "dark",
-                                        "data-onsuccess": "onSignIn"
-                                }),
-                        ])
+                        view: function () {
+                                var data = {
+                                        'body': '',
+                                        'url': ''
+                                }
+                                return m("form", {
+                                        onsubmit: function () {
+                                                PostForm.savePost(data)
+                                        }
+
+                                }, [
+                                        m("label.label", "Body"),
+                                        m("input.input[type=text][placeholder=Body]", {
+                                                oninput: function (e) { data.body = e.target.value },
+                                                value: data.body
+                                        }),
+                                        m("label.label", "Image"),
+                                        m("input.input[type=url][placeholder=Image]", {
+                                                oninput: function (e) { data.url = e.target.value },
+                                                value: data.url
+                                        }),
+                                        m("button.button[type=button]", "Save"),
+                                ])
+
+                        },
+                        savePost: function (post) {
+                                console.log("post:" + post)
+                                return m.request({
+                                        method: "POST",
+                                        url: "_ah/api/myApi/v1/postMsg" + '?access_token=' + encodeURIComponent(Profile.ID),
+                                        params: data,
+                                })
+                                        .then(function (result) {
+                                                console.log("post_message:", result)
+
+                                        })
+                        }
+
                 }
-        }
-        function onSignIn(googleUser) {
-                // Useful data for your client-side scripts:
-                var profile = googleUser.getBasicProfile();
-                console.log("ID: " + profile.getId()); // Don't send this directly to your server!
-                console.log('Full Name: ' + profile.getName());
-                console.log('Given Name: ' + profile.getGivenName());
-                console.log('Family Name: ' + profile.getFamilyName());
-                console.log("Image URL: " + profile.getImageUrl());
-                console.log("Email: " + profile.getEmail());
-
-                // The ID token you need to pass to your backend:
-                var id_token = googleUser.getAuthResponse().id_token;
-                console.log("ID Token: " + id_token);
-        }
 
 
-        m.route(document.getElementById("page"), "/secret", {
-                "/secret": PostForm,
-                "/login": Login
-        })
+                var PostView = {
+                        view: function (vnode) {
+                                return m('div', [
+                                        m('div', { class: 'subtitle' }, "My Posts"),
+                                        m('table', { class: 'table is-striped', "table": "is-striped" }, [
+                                                m('tr', [
+                                                        m('th', { width: "50px" }, "like"),
+                                                        m('th', { width: "50px" }, "del"),
+                                                        m('th', { width: "50px" }, "Bodys"),
+                                                        m('th', { width: "50px" }, "Urls"),
+                                                        m('th', { width: "50px" }, "Like"),
+                                                ]),
+                                                vnode.attrs.profile.list.map(function (item) {
+                                                        return m("tr", [
+                                                                m("td", m("button", {
+                                                                        onclick: function (e) {
+                                                                                console.log("like:" + item.key.id)
+                                                                        }
+                                                                }, "like")),
+                                                                m("td", m("button", {
+                                                                        onclick: function (e) {
+                                                                                console.log("del:" + item.key.id)
+                                                                        }
+                                                                }, "del")),
+                                                                m('td', m('label', item.properties.body)),
+                                                                m('td', m('img', { class: 'is-rounded', 'src': item.properties.url })),
+                                                                m('td', m('label', item.properties.likec)),
+                                                        ])
+                                                }),
+                                                //			    m("div", isError ? "An error occurred" : "Saved"),
+                                                m('button', {
+                                                        class: 'button is-link',
+                                                        onclick: function (e) { vnode.attrs.profile.next() }
+                                                },
+                                                        "Next"),
+                                        ])
+                                ])
+                        }
+                }
 
-</script>
+
+                var Login = {
+                        view: function () {
+                                return m('div', { class: 'container' }, [
+                                        m("h1", { class: 'title' }, 'Connection'),
+                                        m("div", {
+                                                "class": "g-signin2",
+                                                "data-theme": "dark",
+                                                "data-onsuccess": "onSignIn"
+                                        }),
+                                ])
+                        }
+                }
+
+                function onSignIn(googleUser) {
+                        var profile = googleUser.getBasicProfile();
+                        Profile.name = profile.getName();
+                        Profile.email = profile.getEmail();
+                        Profile.ID = googleUser.getAuthResponse().id_token;
+                        Profile.url = profile.getImageUrl();
+                        m.route.set("/secret")
+                }
+
+                m.route(document.getElementById("page"), "/secret", {
+                        "/secret": {
+                                onmatch: function () {
+                                        if (Profile.ID == "") { m.route.set("/login") }
+                                        else return Profile
+                                }
+                        },
+                        "/login": Login
+                })
+        </script>
 
 </html>

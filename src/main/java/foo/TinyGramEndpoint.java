@@ -53,7 +53,7 @@ class TinyGramEndpoint {
 	
 	
 
-	@ApiMethod(name = "timeline",
+	/**@ApiMethod(name = "timeline",
 			   httpMethod = ApiMethod.HttpMethod.GET)
 		public CollectionResponse<Entity> getTimeline(User user, @Nullable @Named("next") String cursorString)
 				throws UnauthorizedException {
@@ -95,7 +95,7 @@ class TinyGramEndpoint {
 			cursorString = results.getCursor().toWebSafeString();
 
 			return CollectionResponse.<Entity>builder().setItems(results).setNextPageToken(cursorString).build();
-		}
+		}**/
     
 	@ApiMethod(name = "getMyPost",
 		   httpMethod = ApiMethod.HttpMethod.GET)
