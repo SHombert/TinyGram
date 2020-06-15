@@ -1,12 +1,14 @@
 package foo;
 
-import com.google.appengine.api.datastore.Key;
 
 public class TinyUser {
 	private String email;
 	private String name;
 	private String url;
 	
+	public TinyUser() {
+		
+	}
 	
 	public String getEmail() {
 		return this.email;
