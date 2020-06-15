@@ -54,7 +54,7 @@ public class TinyGramEndpoint {
 
 	@ApiMethod(name = "follow",
 			   httpMethod = ApiMethod.HttpMethod.GET)
-	public Entity follow(User user, TinyUser tn) throws UnauthorizedException {
+	public Entity follow(User user, @Nullable @Named("key") String key) throws UnauthorizedException {
 		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 
 		if (user == null) {
@@ -69,7 +69,7 @@ public class TinyGramEndpoint {
 			e.printStackTrace();
 		}
 		followings = (List<String>) ent.getProperty("followings");
-		followings.add(tn.getEmail());
+		followings.add(key);
 		ent.setProperty("followings",followings);
 		Transaction txn = datastore.beginTransaction();
 		datastore.put(ent);
@@ -106,7 +106,7 @@ public class TinyGramEndpoint {
 		return ents;
 	}
 	
-	@ApiMethod(name = "timeline", path="timeling",
+	@ApiMethod(name = "timeline", path="timeline",
 			   httpMethod = ApiMethod.HttpMethod.GET)
 		public CollectionResponse<Entity> getTimeline(User user, @Nullable @Named("next") String cursorString)
 				throws UnauthorizedException {
@@ -191,7 +191,7 @@ public class TinyGramEndpoint {
 	}
 	
 	@ApiMethod(name = "likePost", httpMethod = HttpMethod.POST)
-	public Entity likePost(User user, PostMessage pm) throws UnauthorizedException {
+	public Entity likePost(User user, @Nullable @Named("key") String key) throws UnauthorizedException {
 		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 
 		if (user == null) { // valider authentification
@@ -199,7 +199,7 @@ public class TinyGramEndpoint {
 		}
 
 		Entity post = null;
-		Key k = KeyFactory.createKey("Post", pm.getId());
+		Key k = KeyFactory.createKey("Post", key);
 
 		HashSet<String> likes = new HashSet<String>();
 		int likesC;

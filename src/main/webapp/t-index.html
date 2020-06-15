@@ -67,7 +67,7 @@
                                         m("h2", { class: 'subtitle' }, "email:" + Profile.email),
                                         m("img", { "src": Profile.url }),
                                         m("div", m(PostForm)),
-                                        m("div", m(PostView, { profile: Profile }))
+                                        m("div", m(MyPostView, { profile: Profile }))
                                 ])
                         }
                 }
@@ -131,7 +131,7 @@
                                         method: "GET",
                                         url: "_ah/api/myApi/v1/user/posts",
                                         params: {
-                                      	  'next':Profile.nextToken,
+                                      	  'next':MyPost.nextToken,
                                       	  'access_token': encodeURIComponent(Profile.ID)
                                         }
                                 })
@@ -163,7 +163,8 @@
                                         })
                         }
                 }
-                var PostView = {
+
+                var MyPostView = {
                         view: function (vnode) {
                                 return m('div', [
                                         m('div', { class: 'subtitle' }, "My Posts"),
@@ -180,6 +181,8 @@
                                                                 m("td", m("button", {
                                                                         onclick: function (e) {
                                                                                 console.log("like:" + item.key.id)
+                                                                                Post.like(item.key.id);
+
                                                                         }
                                                                 }, "like")),
                                                                 m("td", m("button", {
@@ -203,6 +206,99 @@
                         }
                 }
 
+// Timeline
+                var Posts = {
+                        list: [],
+                        nextToken: "",
+                        loadList: function () {
+                                return m.request({
+                                        method: "GET",
+                                        url: "_ah/api/myApi/v1/timeline"+'?access_token=' + encodeURIComponent(Profile.ID)
+                                })
+                                        .then(function (result) {
+                                                console.log("got:", result)
+                                                Post.list = result.items
+                                                if ('nextPageToken' in result) {
+                                                        Posts.nextToken = result.nextPageToken
+                                                } else {
+                                                        Posts.nextToken = ""
+                                                }
+                                        })
+                        },
+                        next: function () {
+                                return m.request({
+                                        method: "GET",
+                                        url: "_ah/api/myApi/v1/timeline",
+                                        params: {
+                                      	  'next':Post.nextToken,
+                                      	  'access_token': encodeURIComponent(Profile.ID)
+                                        }
+                                })
+                                        .then(function (result) {
+                                                console.log("got:", result)
+                                                result.items.map(function (item) { Posts.list.push(item) })
+                                                if ('nextPageToken' in result) {
+                                                        Posts.nextToken = result.nextPageToken
+                                                } else {
+                                                        Posts.nextToken = ""
+                                                }
+                                        })
+                        },
+                        like: function (key) {
+                                return m.request({
+                                        method: "POST",
+                                        url: "_ah/api/myApi/v1/likePost"+'?access_token='+encodeURIComponent(Profile.ID),
+                                        params: {
+                                                'key':key
+                                        }
+                                })
+                                        .then(function (result) {
+                                                console.log("got:", result)
+                                                Posts.loadList()
+                                        })
+                        }
+                }
+
+                var PostView = {
+                        view: function (vnode) {
+                                return m('div', [
+                                        m('div', { class: 'subtitle' }, "My Posts"),
+                                        m('table', { class: 'table is-striped', "table": "is-striped" }, [
+                                                m('tr', [
+                                                        m('th', { width: "50px" }, "like"),
+                                                        m('th', { width: "50px" }, "del"),
+                                                        m('th', { width: "50px" }, "Bodys"),
+                                                        m('th', { width: "50px" }, "Urls"),
+                                                        m('th', { width: "50px" }, "Like"),
+                                                ]),
+                                                MyPost.list.map(function (item) {
+                                                        return m("tr", [
+                                                                m("td", m("button", {
+                                                                        onclick: function (e) {
+                                                                                console.log("like:" + item.key.id)
+                                                                                Posts.like(item.key.id);
+                                                                        }
+                                                                }, "like")),
+                                                                m("td", m("button", {
+                                                                        onclick: function (e) {
+                                                                                console.log("del:" + item.key.id)
+                                                                        }
+                                                                }, "del")),
+                                                                m('td', m('label', item.properties.body)),
+                                                                m('td', m('img', { class: 'is-rounded', 'src': item.properties.url })),
+                                                                m('td', m('label', item.properties.likec)),
+                                                        ])
+                                                }),
+                                                //			    m("div", isError ? "An error occurred" : "Saved"),
+                                                m('button', {
+                                                        class: 'button is-link',
+                                                        onclick: function (e) { MyPost.next() }
+                                                },
+                                                        "Next"),
+                                        ])
+                                ])
+                        }
+                }
                 var CreatePost = {
                 		 url: "",
                          body: "",
