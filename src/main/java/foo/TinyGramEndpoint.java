@@ -205,4 +205,31 @@ class TinyGramEndpoint {
 		return post;
 	}
 	
+	@ApiMethod(name = "User", httpMethod = HttpMethod.POST)
+	public Entity user(User user, TinyUser tinyU) throws UnauthorizedException {
+		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+
+		if (user == null) { // valider authentification
+			throw new UnauthorizedException("Invalid credentials");
+		}
+		Entity tinyUser = null;
+		Query q = new Query("User").
+			    setFilter(new FilterPredicate("__key__", FilterOperator.EQUAL, KeyFactory.createKey("User", user.getEmail())));
+		
+		PreparedQuery pq = datastore.prepare(q);
+		tinyUser = pq.asSingleEntity();
+		if(tinyUser==null) {
+			Entity xx = new Entity("User", tinyU.getEmail());
+			tinyUser.setProperty("name", tinyU.getName());
+			tinyUser.setProperty("url", tinyU.getUrl());
+			List<String> followers = new ArrayList<String>();
+			List<String> followings = new ArrayList<String>();
+			tinyUser.setProperty("followers", followers);
+			tinyUser.setProperty("followings", followings);
+			Transaction txn = datastore.beginTransaction();
+			datastore.put(tinyUser);
+			txn.commit();
+		}		
+		return tinyUser;
+	}
 }
