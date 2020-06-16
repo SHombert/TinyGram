@@ -39,6 +39,8 @@ import com.google.appengine.api.datastore.Query.SortDirection;
 import com.google.appengine.api.datastore.QueryResultList;
 import com.google.appengine.api.datastore.Transaction;
 
+import foo.TinyUser;
+
 @Api(name = "myApi",
      version = "v1",
      audiences = "852096843957-2vb1jhobb8t1311kqf2v269chbbmp2km.apps.googleusercontent.com",
@@ -74,6 +76,24 @@ public class TinyGramEndpoint {
 		Transaction txn = datastore.beginTransaction();
 		datastore.put(ent);
 		txn.commit();
+		return ent;
+	}
+	
+	@ApiMethod(name = "getUser", path="user/get",
+			   httpMethod = ApiMethod.HttpMethod.GET)
+	public Entity getUser(User user, @Nullable @Named("key") String key) throws UnauthorizedException {
+		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+
+		if (user == null) {
+			throw new UnauthorizedException("Invalid credentials");
+		}
+		Key k = KeyFactory.createKey("User", key);
+		Entity ent = null;
+		try {
+			ent = datastore.get(k);
+		} catch (EntityNotFoundException e) {
+			e.printStackTrace();
+		}
 		return ent;
 	}
 	
@@ -218,12 +238,19 @@ public class TinyGramEndpoint {
 		post.setProperty("likes", likes);
 		
 		Transaction txn = datastore.beginTransaction();
-		datastore.put(post);
+		try {
+			datastore.put(post);
 		txn.commit();
+		} finally {
+			if(txn.isActive()) {
+				txn.rollback();
+			}
+		}
+		
 		return post;
 	}
 	
-	@ApiMethod(name = "user", httpMethod = HttpMethod.POST)
+	@ApiMethod(name = "user", path="createUser", httpMethod = HttpMethod.POST)
 	public Entity user(User user, TinyUser tinyU) throws UnauthorizedException {
 		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 
@@ -237,7 +264,7 @@ public class TinyGramEndpoint {
 		PreparedQuery pq = datastore.prepare(q);
 		tinyUser = pq.asSingleEntity();
 		if(tinyUser==null) {
-			Entity xx = new Entity("User", tinyU.getEmail());
+			tinyUser = new Entity("User", tinyU.getEmail());
 			tinyUser.setProperty("name", tinyU.getName());
 			tinyUser.setProperty("url", tinyU.getUrl());
 			List<String> followers = new ArrayList<String>();
