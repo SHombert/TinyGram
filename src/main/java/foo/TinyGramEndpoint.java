@@ -85,6 +85,7 @@ public class TinyGramEndpoint {
 		
 		if(verif) {
 			myFollowings.add(key);
+			tuFollowers.add(user.getEmail());
 			me.setProperty("followings",myFollowings);
 			tu.setProperty("followers",tuFollowers);
 			Transaction txn1 = datastore.beginTransaction();
@@ -118,7 +119,7 @@ public class TinyGramEndpoint {
 	}
 	
 	
-	@ApiMethod(name = "followings", path= "user/followings",
+	/**@ApiMethod(name = "followings", path= "user/followings",
 			   httpMethod = ApiMethod.HttpMethod.GET)
 	public List<String> getFollowings(User user) throws UnauthorizedException {
 		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
@@ -136,15 +137,15 @@ public class TinyGramEndpoint {
 		}
 
 		return followings;
-	}
+	}**/
 
-	@ApiMethod(name = "research",
+	/**@ApiMethod(name = "research",
 			   httpMethod = ApiMethod.HttpMethod.GET)
 	public List<Entity> research(User user) throws UnauthorizedException {
 		
 		List<Entity> ents =null;
 		return ents;
-	}
+	}**/
 	
 	@ApiMethod(name = "timeline", path="timeline",
 			   httpMethod = ApiMethod.HttpMethod.GET)
@@ -211,7 +212,8 @@ public class TinyGramEndpoint {
 		post.setProperty("url", pm.url);
 		post.setProperty("body", pm.body);
 		post.setProperty("likesC", 0);
-		HashSet<String> likes=new HashSet<String>();
+		ArrayList<String> likes=new ArrayList<>();
+		likes.add("");
 		post.setProperty("likes", likes);
 		post.setProperty("date", new Date());
 				
@@ -241,18 +243,18 @@ public class TinyGramEndpoint {
 		Entity post = null;
 		Key k = KeyFactory.createKey("Post", key);
 
-		HashSet<String> likes = new HashSet<String>();
-		int likesC;
+		ArrayList<String> likes = new ArrayList<>();
+		long likesC;
 		try {
 			post = datastore.get(k);
 			
 		} catch (EntityNotFoundException e) {
 			e.printStackTrace();
 		}
-		likes = (HashSet<String>) post.getProperty("likes");
+		likes = (ArrayList<String>) post.getProperty("likes");
 		if(!likes.contains(user.getEmail())) {
 			likes.add(user.getEmail());
-			likesC = (int) post.getProperty("likesC") +1;
+			likesC = (long) post.getProperty("likesC") +1;
 			
 			post.setProperty("likesC", likesC);
 			post.setProperty("likes", likes);

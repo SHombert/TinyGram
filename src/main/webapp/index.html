@@ -307,19 +307,19 @@
                                                         return m("tr", [
                                                                 m("td", m("button", {
                                                                         onclick: function (e) {
-                                                                                console.log("like:" + item.key.id)
-                                                                                Post.like(item.key.id);
+                                                                                console.log("like:" + item.key.name)
+                                                                                Posts.like(item.key.name);
 
                                                                         }
                                                                 }, "like")),
                                                                 m("td", m("button", {
                                                                         onclick: function (e) {
-                                                                                console.log("del:" + item.key.id)
+                                                                                console.log("del:" + item.key.name)
                                                                         }
                                                                 }, "del")),
                                                                 m('td', m('label', item.properties.body)),
                                                                 m('td', m('img', { class: 'is-rounded', 'src': item.properties.url })),
-                                                                m('td', m('label', item.properties.likec)),
+                                                                m('td', m('label', item.properties.likesC)),
                                                         ])
                                                 }),
                                                 //			    m("div", isError ? "An error occurred" : "Saved"),
@@ -344,7 +344,7 @@
                                 })
                                         .then(function (result) {
                                                 console.log("got:", result)
-                                                Post.list = result.items
+                                                Posts.list = result.items
                                                 if ('nextPageToken' in result) {
                                                         Posts.nextToken = result.nextPageToken
                                                 } else {
@@ -357,7 +357,7 @@
                                         method: "GET",
                                         url: "_ah/api/myApi/v1/timeline",
                                         params: {
-                                                'next': Post.nextToken,
+                                                'next': Posts.nextToken,
                                                 'access_token': encodeURIComponent(Profile.ID)
                                         }
                                 })
@@ -380,6 +380,7 @@
                                         }
                                 })
                                         .then(function (result) {
+                                                Posts.loadList();
                                                 console.log("got:", result)
                                         })
                         }
@@ -402,13 +403,13 @@
                                                         return m("tr", [
                                                                 m("td", m("button", {
                                                                         onclick: function (e) {
-                                                                                console.log("like:" + item.key.id)
-                                                                                Posts.like(item.key.id);
+                                                                                console.log("like:" + item.key.name)
+                                                                                Posts.like(item.key.name);
                                                                         }
                                                                 }, "like")),
                                                                 m("td", m("button", {
                                                                         onclick: function (e) {
-                                                                                console.log("del:" + item.key.id)
+                                                                                console.log("del:" + item.key.name)
                                                                         }
                                                                 }, "del")),
                                                                 m('td', m('label', item.properties.body)),
@@ -497,6 +498,8 @@
                                                 UserProfile.name = result.properties.name
                                                 UserProfile.url = result.properties.url
                                                 UserProfile.email = result.key.name
+                                                UserProfile.followers = result.properties.followers;
+                                                UserProfile.followings = result.properties.followings;
 
                                                 m.route.set("/userProfile")
 
@@ -515,6 +518,9 @@
                                 })
                                         .then(function (result) {
                                                 console.log("results :", result)
+                                                Profile.followings = result.properties.followings;
+                                                Profile.followings = result.properties.followers;
+
                                         })
 
                         }
