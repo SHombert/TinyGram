@@ -62,21 +62,41 @@ public class TinyGramEndpoint {
 		if (user == null) {
 			throw new UnauthorizedException("Invalid credentials");
 		}
-		List<String> followings = null;
-		Key k = KeyFactory.createKey("User", user.getEmail());
-		Entity ent = null;
+		List<String> myFollowings = null;
+		List<String> tuFollowers = null;
+		
+		Key myk = KeyFactory.createKey("User", user.getEmail()); // My Key
+		Key tuk = KeyFactory.createKey("User", key); // The TinyUser key
+
+		Entity me = null;
+		Entity tu = null;
 		try {
-			ent = datastore.get(k);
+			me = datastore.get(myk);
+			tu = datastore.get(tuk);
 		} catch (EntityNotFoundException e) {
 			e.printStackTrace();
 		}
-		followings = (List<String>) ent.getProperty("followings");
-		followings.add(key);
-		ent.setProperty("followings",followings);
-		Transaction txn = datastore.beginTransaction();
-		datastore.put(ent);
-		txn.commit();
-		return ent;
+		myFollowings = (List<String>) me.getProperty("followings");
+		tuFollowers = (List<String>) tu.getProperty("followers");
+		boolean verif=false;
+		if(!myFollowings.isEmpty()) {
+			verif = !myFollowings.contains(key);
+		}
+		
+		if(verif) {
+			myFollowings.add(key);
+			me.setProperty("followings",myFollowings);
+			tu.setProperty("followers",tuFollowers);
+			Transaction txn1 = datastore.beginTransaction();
+			datastore.put(me);
+			txn1.commit();
+			Transaction txn2 = datastore.beginTransaction();
+			datastore.put(tu);
+			txn2.commit();
+
+		}
+		
+		return me;
 	}
 	
 	@ApiMethod(name = "getUser", path="user/get",
@@ -230,23 +250,23 @@ public class TinyGramEndpoint {
 			e.printStackTrace();
 		}
 		likes = (HashSet<String>) post.getProperty("likes");
-		// TODO ne pas reliker
-		likes.add(user.getEmail());
-		likesC = (int) post.getProperty("likesC") +1;
-		
-		post.setProperty("likesC", likesC);
-		post.setProperty("likes", likes);
-		
-		Transaction txn = datastore.beginTransaction();
-		try {
-			datastore.put(post);
-		txn.commit();
-		} finally {
-			if(txn.isActive()) {
-				txn.rollback();
+		if(!likes.contains(user.getEmail())) {
+			likes.add(user.getEmail());
+			likesC = (int) post.getProperty("likesC") +1;
+			
+			post.setProperty("likesC", likesC);
+			post.setProperty("likes", likes);
+			
+			Transaction txn = datastore.beginTransaction();
+			try {
+				datastore.put(post);
+			txn.commit();
+			} finally {
+				if(txn.isActive()) {
+					txn.rollback();
+				}
 			}
 		}
-		
 		return post;
 	}
 	
@@ -257,24 +277,30 @@ public class TinyGramEndpoint {
 		if (user == null) { // valider authentification
 			throw new UnauthorizedException("Invalid credentials");
 		}
-		Entity tinyUser = null;
-		Query q = new Query("User").
-			    setFilter(new FilterPredicate("__key__", FilterOperator.EQUAL, KeyFactory.createKey("User", user.getEmail())));
-		
-		PreparedQuery pq = datastore.prepare(q);
-		tinyUser = pq.asSingleEntity();
-		if(tinyUser==null) {
-			tinyUser = new Entity("User", tinyU.getEmail());
-			tinyUser.setProperty("name", tinyU.getName());
-			tinyUser.setProperty("url", tinyU.getUrl());
-			List<String> followers = new ArrayList<String>();
+		Key k = KeyFactory.createKey("User", user.getEmail());
+
+		Entity e;
+		try {
+
+			e = datastore.get(k);
+
+		} catch (EntityNotFoundException nef) {
+
+			e = new Entity("User", user.getEmail());
+			e.setProperty("name", tinyU.getName());
+			e.setProperty("email", user.getEmail());
+			e.setProperty("url", tinyU.getUrl());
 			List<String> followings = new ArrayList<String>();
-			tinyUser.setProperty("followers", followers);
-			tinyUser.setProperty("followings", followings);
+			List<String> followers = new ArrayList<String>();
+
+			e.setProperty("followings", followings);
+			e.setProperty("followers", followers);
+
 			Transaction txn = datastore.beginTransaction();
-			datastore.put(tinyUser);
+			datastore.put(e);
 			txn.commit();
-		}		
-		return tinyUser;
+		}
+		
+		return e;
 	}
 }
