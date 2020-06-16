@@ -39,12 +39,30 @@
                 
                         <div class="collapse navbar-collapse" id="navbar4">
                                 <ul class="navbar-nav ml-auto pr-4">
-                                <li class="nav-item px-md-2 active"> <a class="nav-link" href="features.php">Home</a> </li>
                                 <!-- <li class="nav-item px-md-2"> <a class="nav-link" href="pricing.php">Notifications</a> </li> -->
                                 <li class="nav-item px-md-2"> <a class="nav-link" onclick = "m.route.set('/profile')">Profile</a> </li>
+                                <form class="form-inline">
+
                                 <li class="nav-item px-md-3">
-                                        <span class="algolia-autocomplete" style="position: relative; display: inline-block; direction: ltr;"><input type="search" class="form-control ds-input" id="search-input" placeholder="Search friends..." aria-label="Search for..." autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-owns="algolia-autocomplete-listbox-0" dir="auto" style="position: relative; vertical-align: top;"><pre aria-hidden="true" style="position: absolute; visibility: hidden; white-space: pre; font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, &quot;Helvetica Neue&quot;, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 16px; font-style: normal; font-variant: normal; font-weight: 400; word-spacing: 0px; letter-spacing: normal; text-indent: 0px; text-rendering: auto; text-transform: none;"></pre><span class="ds-dropdown-menu" role="listbox" id="algolia-autocomplete-listbox-0" style="position: absolute; top: 100%; z-index: 100; left: 0px; right: auto; display: none;"><div class="ds-dataset-1"></div></span></span>
+                                
+                                        <span class="algolia-autocomplete" style="position: relative; display: inline-block; direction: ltr;">
+                                                <input type="search" class="form-control ds-input" id="search-input" placeholder="Search friends..."
+                                                        aria-label="Search for..." autocomplete="off" spellcheck="false" role="combobox"
+                                                        aria-autocomplete="list" aria-expanded="false" aria-owns="algolia-autocomplete-listbox-0"
+                                                        dir="auto" style="position: relative; vertical-align: top;">
+                                                <pre aria-hidden="true"
+                                                        style="position: absolute; visibility: hidden; white-space: pre; font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, &quot;Helvetica Neue&quot;, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 16px; font-style: normal; font-variant: normal; font-weight: 400; word-spacing: 0px; letter-spacing: normal; text-indent: 0px; text-rendering: auto; text-transform: none;"></pre>
+                                                <span class="ds-dropdown-menu" role="listbox" id="algolia-autocomplete-listbox-0"
+                                                        style="position: absolute; top: 100%; z-index: 100; left: 0px; right: auto; display: none;">
+                                                        <div class="ds-dataset-1"></div>
+                                                </span></span>
+                                
                                 </li>
+                                <li>
+                                        <button class="btn btn-dark my-2 my-sm-0" onclick="SearchUser.searchUser()" type="button">Search</button>                                            
+                                </li>
+                        </form>
+
                                 <li class="nav-item px-md-2">
                                   <a class="btn btn-dark"  onclick = "m.route.set('/createPost')" role="button">Create post</a>
                             </li>
@@ -177,8 +195,8 @@
                         postMessage: function () {
                                 var data = {
                                         'owner': Profile.ID,
-                                        'url': PostForm.url,
-                                        'body': PostForm.body
+                                        'url': CreatePost.url,
+                                        'body': CreatePost.body
                                 }
                                 console.log("post:" + data)
                                 return m.request({
@@ -189,6 +207,7 @@
                                         .then(function (result) {
                                                 console.log("got:", result)
                                                 MyPost.loadList()
+                                                m.route.set("/profile")
                                         })
                         }
                 }
@@ -380,6 +399,33 @@
              	   }
                 
 
+                var SearchUser = {
+                        
+                        searchUser : function () {
+                                console.log("sending request.."+document.getElementById("search-input").value )
+                                return m.request({
+
+                                        method: "GET",
+                                        url: "_ah/api/myApi/v1/user/get"+'?access_token='+encodeURIComponent(Profile.ID),
+                                        params: {
+                                                'key': document.getElementById("search-input").value
+                                        }
+                                })
+                                        .then(function (result) {
+                                                console.log("results :", result)
+
+                                                UserProfile.name = result.properties.name
+                                                UserProfile.url = result.properties.url
+                                                UserProfile.email = result.properties.email
+
+                                                m.route.set("/userProfile")
+
+
+                                        })
+                        }
+                        
+                }
+
 
                 var Login = {
                         view: function () {
@@ -456,6 +502,13 @@
                 				else return UserProfile
                     		}
                         },
+                        /**"/search":{
+                        	onmatch: function() {
+                			  	if (Profile.ID=="") {m.route.set("/login")}
+                				else 
+                                                SearchUser.searchUser();
+                    		}
+                        },**/
 
                 })
         </script>
