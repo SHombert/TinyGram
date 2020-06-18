@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <appengine-web-app xmlns="http://appengine.google.com/ns/1.0">
 
-  <threadsafe>true</threadsafe>
+  <threadsafe>false</threadsafe>
   <sessions-enabled>true</sessions-enabled>
   <runtime>java8</runtime>
 
@@ -10,7 +10,9 @@
     </include>
     <include path="/**.js" >
     </include>
-    
+    <include path="/**.css"></include>
+    <include path="/**.png"></include>
+
   </static-files>
   <system-properties>
     <property name="java.util.logging.config.file" value="WEB-INF/logging.properties"/>
@@ -18,7 +20,7 @@
 <!-- [START env_variables] -->
     <env-variables>
 <!--         <env-var name="ENDPOINTS_SERVICE_NAME" value="sobike44.appspot.com" /> -->
-        <env-var name="ENDPOINTS_SERVICE_NAME" value="sobike44.appspot.com" />
+        <env-var name="ENDPOINTS_SERVICE_NAME" value="tinygram-272116.appspot.com" />
 
     </env-variables>
     <!-- [END env_variables] -->
