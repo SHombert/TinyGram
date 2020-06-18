@@ -474,7 +474,7 @@ a {
 .content-profile-page {
   margin: 1em auto;
   width: 50em;
-  padding-top:5%;
+  padding-top:1%;
 }
 
 .card {
@@ -610,4 +610,66 @@ a {
 .profile-user-page .data-user li a:hover span {
   color: #276955; 
 }
+
+/* PostView */
+
+
+.button_next {
+	background: none;
+    border: 3px solid #aaaebc;
+    min-width: 40px;
+    -webkit-appearance: none;
+    font-size: 1rem;
+    text-shadow: none;
+    display: inline-block;
+    padding: 5px 5px;
+    margin: 0 10px 0 0;
+    position: relative;
+    border-radius: 100px;
+    border: 3px solid #6a505000;
+    background: #276955;
+    color: #ffffff;
+    cursor: pointer;
+    text-decoration: none !important;
+    font-weight: normal !important;
+    margin-left: 50%;
+}
+th,td {
+	text-align: center;
+}
  
+.like{
+    display: inline-block;
+    padding:1px 7px;
+    margin: 0 10px 0 0;
+    position: relative;
+    border-radius: 100px;
+    border: 3px solid #6a505000;
+    background: #bf1122;
+    color: #ffffff;
+    cursor: pointer;
+    text-decoration: none !important;
+    font-weight: normal !important;
+}
+
+.description {
+  text-align: justify;
+}
+
+.nblikes {
+  text-align:right;
+  color: #93a0aa;
+}
+
+table,td,tr,th {
+        border-style:hidden;
+}
+
+th img {
+	width: 500px;
+	height: auto;
+}
+
+table {
+  margin-left: 10%;
+}
