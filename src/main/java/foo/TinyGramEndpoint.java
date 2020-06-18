@@ -39,6 +39,7 @@ import com.google.appengine.api.datastore.Query.SortDirection;
 import com.google.appengine.api.datastore.QueryResultList;
 import com.google.appengine.api.datastore.Transaction;
 
+import foo.PostMessage;
 import foo.TinyUser;
 
 @Api(name = "myApi",
@@ -293,8 +294,9 @@ public class TinyGramEndpoint {
 			e.setProperty("email", user.getEmail());
 			e.setProperty("url", tinyU.getUrl());
 			List<String> followings = new ArrayList<String>();
+			followings.add("");
 			List<String> followers = new ArrayList<String>();
-
+			followers.add("");
 			e.setProperty("followings", followings);
 			e.setProperty("followers", followers);
 

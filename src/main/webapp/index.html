@@ -129,7 +129,7 @@
                                                                 ]),
                                                         ]),
                                                 ]),
-                                        ]),                                m("div",m(MyPostView,{profile: Profile}))
+                                        ]), m("div", m(MyPostView, { profile: Profile }))
 
                                 ])
                         }
@@ -494,20 +494,25 @@
                                 })
                                         .then(function (result) {
                                                 console.log("results :", result)
+                                                if (result = null) {
+                                                        //UserNotFound
 
-                                                UserProfile.name = result.properties.name
-                                                UserProfile.url = result.properties.url
-                                                UserProfile.email = result.key.name
-                                                UserProfile.followers = result.properties.followers;
-                                                UserProfile.followings = result.properties.followings;
+                                                } else {
+                                                        UserProfile.name = result.properties.name
+                                                        UserProfile.url = result.properties.url
+                                                        UserProfile.email = result.key.name
+                                                        UserProfile.followers = result.properties.followers;
+                                                        UserProfile.followings = result.properties.followings;
 
-                                                m.route.set("/userProfile")
+                                                        m.route.set("/userProfile")
+                                                }
+
 
 
                                         })
                         },
-                        follow: function(key){
-                                
+                        follow: function (key) {
+
                                 return m.request({
 
                                         method: "GET",
@@ -603,14 +608,7 @@
                                         if (Profile.ID == "") { m.route.set("/login") }
                                         else return UserProfile
                                 }
-                        },
-                        /**"/search":{
-                        	onmatch: function() {
-                			  	if (Profile.ID=="") {m.route.set("/login")}
-                				else 
-                                                SearchUser.searchUser();
-                    		}
-                        },**/
+                        }
 
                 })
         </script>
