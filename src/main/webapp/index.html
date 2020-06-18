@@ -108,23 +108,17 @@
                                                         m("p", { class: 'category' }, Profile.email),
                                                 ]),
                                                 m("ul", { class: 'data-user' }, [
-                                                        m("li", [
-                                                                m("a", [
-                                                                        m("strong", "60 "),
-                                                                        m("span", "Posts"),
-                                                                ]),
-                                                        ]),
 
                                                         m("li", [
                                                                 m("a", [
-                                                                        m("strong", "60 "),
+                                                                        m("strong",Profile.followers.length),
                                                                         m("span", "Followers"),
                                                                 ]),
                                                         ]),
 
                                                         m("li", [
                                                                 m("a", [
-                                                                        m("strong", "60 "),
+                                                                        m("strong",Profile.followings.length),
                                                                         m("span", "Followings"),
                                                                 ]),
                                                         ]),
@@ -172,23 +166,17 @@
                                                         m("p", { class: 'category' }, UserProfile.email),
                                                 ]),
                                                 m("ul", { class: 'data-user' }, [
+                                                        
                                                         m("li", [
                                                                 m("a", [
-                                                                        m("strong", "60 "),
-                                                                        m("span", "Posts"),
-                                                                ]),
-                                                        ]),
-
-                                                        m("li", [
-                                                                m("a", [
-                                                                        m("strong", "60 "),
+                                                                        m("strong",UserProfile.followers.length),
                                                                         m("span", "Followers"),
                                                                 ]),
                                                         ]),
 
                                                         m("li", [
                                                                 m("a", [
-                                                                        m("strong", "60 "),
+                                                                        m("strong",UserProfile.followings.length),
                                                                         m("span", "Followings"),
                                                                 ]),
                                                         ]),
