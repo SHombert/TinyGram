@@ -1,4 +1,17 @@
-# webandcloud
+# TinyGram
+
+**Etudiants**
+
+BLAIECH Emna, CHATELET Camille & HOMBERT Sarah
+
+
+Access the site at : https://tinygram-272116.appspot.com/
+
+Login with your Google Account
+
+
+## Indications
+
 
 **Be sure your maven has access to the web**
 * you should have file ~/.m2/settings.xml
@@ -18,7 +31,7 @@ molli-p@remote:~/.m2$ cat settings.xml
 </settings>
 ```
 
-## import and run in eclipse
+### Import and run in eclipse
 * install the code in your home:
 ```
  cd ~
@@ -29,7 +42,7 @@ molli-p@remote:~/.m2$ cat settings.xml
 * Change "sobike44" with your google project ID in pom.xml
 * Change "sobike44" with your google project ID in src/main/webapp/WEB-INF/appengine-web.xml
 
-## Run in eclipse
+### Run in eclipse
 
 * start an eclipse with gcloud plugin
 ```
@@ -51,7 +64,7 @@ molli-p@remote:~/.m2$ cat settings.xml
  ```
 
 
-## Install and Run 
+### Install and Run 
 * (gcloud SDK must be installed first. see https://cloud.google.com/sdk/install)
 * git clone https://github.com/momo54/webandcloud.git
 * cd webandcloud
@@ -66,7 +79,7 @@ mvn appengine:deploy
 gcloud app browse
 ```
 
-# Access REST API
+### Access REST API
 * (worked before) 
 ```
 https://<yourapp>.appstpot.com/_ah/api/explorer
